@@ -58,12 +58,14 @@ static void handle_request(int connection_fd, const char *website_directory) {
     strcat(dest, request->path);
     struct stat file_stat;
     stat(dest, &file_stat);
+    printf("Request: %s\n", request->path);
     //printf("File type: %s\n", http_get_mime_type(request->path));
     if(S_ISREG(file_stat.st_mode)) {
         FILE* f = fopen(dest, "rb");
         char* buffer = malloc(file_stat.st_size);
         fread(buffer, sizeof(char), file_stat.st_size, f);
         http_start_response(connection_fd, 200);
+        printf("File type: %s\n", http_get_mime_type(request->path));
         http_send_header(connection_fd, "Content-Type", http_get_mime_type(request->path));
         char length[32] = "";
         sprintf(length, "%d",file_stat.st_size);
@@ -85,12 +87,12 @@ static void handle_request(int connection_fd, const char *website_directory) {
                 char* buffer = malloc(file_stat.st_size);
                 fread(buffer, sizeof(char), file_stat.st_size, f);
                 http_start_response(connection_fd, 200);
-                http_send_header(connection_fd, "Content-Type", http_get_mime_type(request->path));
+                http_send_header(connection_fd, "Content-Type", "text/html");
                 char length[32] = "";
                 sprintf(length, "%d",file_stat.st_size);
                 http_send_header(connection_fd, "Content-Length", length);
                 http_end_headers(connection_fd);
-                send(connection_fd, buffer, file_stat.st_size, NULL);
+                send(connection_fd, buffer, file_stat.st_size, 0);
                 free(buffer);
                 fclose(f);
                 closedir(d);
