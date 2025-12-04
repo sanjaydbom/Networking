@@ -172,7 +172,7 @@ static void handle_connection(int server_socket, int connection_socket, const ch
     args->dir = website_directory;
     args->conn_sock = connection_socket;
     pthread_create(&thread_handle, NULL, &handle_requests_helper, (void*)args);
-    pthread_detach(thread_handle);
+    //pthread_detach(thread_handle);
 }
 
 
