@@ -56,18 +56,20 @@ static void handle_request(int connection_fd, const char *website_directory) {
     char dest[1000] = "";
     strcat(dest, website_directory);
     strcat(dest, request->path);
-    printf("Serving : %s\n", dest);
     struct stat file_stat;
     stat(dest, &file_stat);
+    //printf("File type: %s\n", http_get_mime_type(request->path));
     if(S_ISREG(file_stat.st_mode)) {
-        FILE* f = fopen(dest, "r");
-        char* buffer = malloc(file_stat.st_size+1);
+        FILE* f = fopen(dest, "rb");
+        char* buffer = malloc(file_stat.st_size);
         fread(buffer, sizeof(char), file_stat.st_size, f);
-        buffer[file_stat.st_size] = '\0';
         http_start_response(connection_fd, 200);
         http_send_header(connection_fd, "Content-Type", http_get_mime_type(request->path));
+        char length[32] = "";
+        sprintf(length, "%d",file_stat.st_size);
+        http_send_header(connection_fd, "Content-Length", length);
         http_end_headers(connection_fd);
-        http_send_string(connection_fd, buffer);
+        send(connection_fd, buffer, file_stat.st_size, NULL);
         free(buffer);
         fclose(f);
         return;
@@ -79,14 +81,16 @@ static void handle_request(int connection_fd, const char *website_directory) {
             if(strcmp(dir->d_name, "index.html") == 0) {
                 strcat(dest, "index.html");
                 stat(dest, &file_stat);
-                FILE* f = fopen(dest, "r");
-                char* buffer = malloc(file_stat.st_size+1);
+                FILE* f = fopen(dest, "rb");
+                char* buffer = malloc(file_stat.st_size);
                 fread(buffer, sizeof(char), file_stat.st_size, f);
-                buffer[file_stat.st_size] = '\0';
                 http_start_response(connection_fd, 200);
-                http_send_header(connection_fd, "Content-Type", http_get_mime_type(dest));
+                http_send_header(connection_fd, "Content-Type", http_get_mime_type(request->path));
+                char length[32] = "";
+                sprintf(length, "%d",file_stat.st_size);
+                http_send_header(connection_fd, "Content-Length", length);
                 http_end_headers(connection_fd);
-                http_send_string(connection_fd, buffer);
+                send(connection_fd, buffer, file_stat.st_size, NULL);
                 free(buffer);
                 fclose(f);
                 closedir(d);
