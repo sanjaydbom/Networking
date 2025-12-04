@@ -164,7 +164,6 @@ static void* handle_requests_helper(void* args){
     handle_request(arg->conn_sock, arg->dir);
     close(arg->conn_sock);
     free(args);
-    pthread_detach(pthread_self());
 }
 
 static void handle_connection(int server_socket, int connection_socket, const char *website_directory) {
@@ -173,6 +172,7 @@ static void handle_connection(int server_socket, int connection_socket, const ch
     args->dir = website_directory;
     args->conn_sock = connection_socket;
     pthread_create(&thread_handle, NULL, &handle_requests_helper, (void*)args);
+    pthread_detach(thread_handle);
 }
 
 
