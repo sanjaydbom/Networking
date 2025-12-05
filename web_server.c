@@ -58,14 +58,14 @@ static void handle_request(int connection_fd, const char *website_directory) {
     strcat(dest, request->path);
     struct stat file_stat;
     stat(dest, &file_stat);
-    printf("Request: %s\n", request->path);
+    //printf("Request: %s\n", request->path);
     //printf("File type: %s\n", http_get_mime_type(request->path));
     if(S_ISREG(file_stat.st_mode)) {
         FILE* f = fopen(dest, "rb");
         char* buffer = malloc(file_stat.st_size);
         fread(buffer, sizeof(char), file_stat.st_size, f);
         http_start_response(connection_fd, 200);
-        printf("File type: %s\n", http_get_mime_type(request->path));
+        //printf("File type: %s\n", http_get_mime_type(request->path));
         http_send_header(connection_fd, "Content-Type", http_get_mime_type(request->path));
         char length[32] = "";
         sprintf(length, "%d",file_stat.st_size);
@@ -172,7 +172,7 @@ static void handle_connection(int server_socket, int connection_socket, const ch
     args->dir = website_directory;
     args->conn_sock = connection_socket;
     pthread_create(&thread_handle, NULL, &handle_requests_helper, (void*)args);
-    //pthread_detach(thread_handle);
+    pthread_detach(&thread_handle);
 }
 
 
